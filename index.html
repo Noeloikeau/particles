@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Matrix Physics Demo</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: black;
+        }
+        canvas {
+            display: block;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+        #controls {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+            font-family: monospace;
+        }
+        .control-wrapper {
+            position: relative;
+        }
+        select {
+            background: rgba(0, 0, 0, 0.7);
+            color: #0f0;
+            border: 1px solid #0f0;
+            padding: 5px;
+            margin: 5px;
+            font-family: monospace;
+            font-size: 14px;
+            outline: none;
+            min-width: 150px;
+        }
+        select:hover {
+            background: rgba(51, 51, 51, 0.7);
+        }
+        option {
+            background: #222;
+            color: #0f0;
+        }
+        .config-panel {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 5px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #0f0;
+            padding: 10px;
+            margin-top: 5px;
+            min-width: 250px;
+            max-height: 80vh;
+            overflow-y: auto;
+            font-size: 14px;
+        }
+        .config-panel.active {
+            display: block;
+        }
+        .config-group {
+            border-bottom: 1px solid rgba(0, 255, 0, 0.2);
+            padding: 8px 0;
+            margin: 8px 0;
+        }
+        .config-group-title {
+            color: #0f0;
+            margin-bottom: 8px;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 12px;
+        }
+        .config-item {
+            margin: 8px 0;
+            color: #0f0;
+        }
+        .config-item label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+            font-size: 12px;
+        }
+        .config-item label span {
+            opacity: 0.8;
+        }
+        input[type="range"] {
+            width: 100%;
+            background: transparent;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            background: #0f0;
+        }
+        input[type="range"]::-webkit-slider-runnable-track {
+            background: #333;
+        }
+        select.param-select {
+            width: 100%;
+            margin: 0;
+            font-size: 12px;
+        }
+        .hover-area {
+            position: absolute;
+            top: -10px;
+            left: 0;
+            right: 0;
+            bottom: -10px;
+            pointer-events: none;
+        }
+        .control-wrapper.active .hover-area {
+            top: -10px;
+            left: 0;
+            right: 0;
+            bottom: -200px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="matrix-canvas"></canvas>
+    <div id="controls">
+        <div class="control-wrapper">
+            <select id="scene-select"></select>
+            <div class="hover-area"></div>
+            <div class="config-panel"></div>
+        </div>
+    </div>
+    <script type="module">
+        import MatrixApp from './main.js';
+        import { initializeScenes, getAllScenes, getScene, updateActiveScene } from './scenes/index.js';
+        import { configManager } from './scenes/utils.js';
+
+        async function initializeApp() {
+            console.log('Starting app initialization...');
+            await initializeScenes();
+            
+            const controlWrapper = document.querySelector('.control-wrapper');
+            const sceneSelect = document.getElementById('scene-select');
+            const configPanel = document.querySelector('.config-panel');
+            const scenes = getAllScenes();
+            
+            if (scenes.length > 0) {
+                sceneSelect.innerHTML = scenes.map(scene => 
+                    `<option value="${scene.id}">${scene.name}</option>`
+                ).join('');
+            }
+
+            const app = new MatrixApp('matrix-canvas');
+
+            function generateConfigUI(config, parentKey = '') {
+                return Object.entries(config).map(([key, value]) => {
+                    const fullKey = parentKey ? `${parentKey}.${key}` : key;
+                    
+                    // Handle nested config groups
+                    if (value && typeof value === 'object' && !('value' in value) && !('options' in value)) {
+                        return `
+                            <div class="config-group">
+                                <div class="config-group-title">${key}</div>
+                                ${generateConfigUI(value, fullKey)}
+                            </div>
+                        `;
+                    }
+                    
+                    // Handle dropdown options
+                    if (value.options) {
+                        return `
+                            <div class="config-item">
+                                <label>${value.label || key}</label>
+                                <select class="param-select" data-key="${fullKey}">
+                                    ${value.options.map(opt => 
+                                        `<option value="${opt}" ${opt === value.value ? 'selected' : ''}>${opt}</option>`
+                                    ).join('')}
+                                </select>
+                            </div>
+                        `;
+                    }
+                    
+                    // Handle sliders
+                    return `
+                        <div class="config-item">
+                            <label>
+                                ${value.label || key}
+                                <span id="${fullKey}-value">${value.value}${value.unit || ''}</span>
+                            </label>
+                            <input type="range" 
+                                   data-key="${fullKey}"
+                                   min="${value.min || 0}"
+                                   max="${value.max || 100}"
+                                   step="${value.step || 1}"
+                                   value="${value.value}">
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            function updateConfigValue(key, value) {
+                console.log('Updating config value:', key, value);
+                const success = configManager.updateValue(key, value);
+                console.log('Update success:', success);
+                
+                const currentConfig = configManager.getCurrentConfig();
+                console.log('Current config after update:', currentConfig);
+
+                // Update the value display
+                const valueDisplay = document.getElementById(`${key}-value`);
+                if (valueDisplay) {
+                    let displayValue = value;
+                    // Find the unit if it exists
+                    const configPath = key.split('.');
+                    let configItem = currentConfig;
+                    for (const pathPart of configPath) {
+                        configItem = configItem[pathPart];
+                    }
+                    if (configItem && configItem.unit) {
+                        displayValue += configItem.unit;
+                    }
+                    valueDisplay.textContent = displayValue;
+                }
+
+                requestAnimationFrame(() => {
+                    updateActiveScene(app, sceneSelect.value, currentConfig);
+                });
+            }
+
+            function generateConfigPanel(sceneId) {
+                configManager.activateScene(sceneId);
+                const currentConfig = configManager.getCurrentConfig();
+                if (!currentConfig) return;
+
+                configPanel.innerHTML = generateConfigUI(currentConfig);
+
+                // Add event listeners for all inputs
+                configPanel.querySelectorAll('input[type="range"], select.param-select').forEach(input => {
+                    input.addEventListener('input', (e) => {
+                        e.preventDefault();
+                        const key = e.target.dataset.key;
+                        const value = e.target.type === 'range' ? parseFloat(e.target.value) : e.target.value;
+                        updateConfigValue(key, value);
+                    });
+                });
+            }
+
+            sceneSelect.addEventListener('focus', () => {
+                controlWrapper.classList.add('active');
+                configPanel.classList.add('active');
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!controlWrapper.contains(e.target)) {
+                    controlWrapper.classList.remove('active');
+                    configPanel.classList.remove('active');
+                }
+            });
+
+            sceneSelect.addEventListener('change', (e) => {
+                generateConfigPanel(e.target.value);
+                const currentConfig = configManager.getCurrentConfig();
+                updateActiveScene(app, e.target.value, currentConfig);
+            });
+
+            // Initialize first scene
+            generateConfigPanel(sceneSelect.value);
+            const currentConfig = configManager.getCurrentConfig();
+            updateActiveScene(app, sceneSelect.value, currentConfig);
+
+            window.addEventListener('resize', () => {
+                app.resize(window.innerWidth, window.innerHeight);
+                const currentConfig = configManager.getCurrentConfig();
+                updateActiveScene(app, sceneSelect.value, currentConfig);
+            });
+
+            app.start();
+        }
+
+        initializeApp().catch(err => console.error('Error initializing app:', err));
+    </script>
+</body>
+</html>
