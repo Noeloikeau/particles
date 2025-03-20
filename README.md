@@ -3,7 +3,7 @@
 A creative application of particle physics in JavaScript/HTML.
 
 <!-- Main visualization image -->
-![Particle System Visualization](screenshots/main-visualization.png)
+![Particle System Visualization](screenshots/MatrixRain.jpg)
 
 *Example: Matrix Rain simulation*
 
