@@ -111,17 +111,17 @@ The extensive configuration system allows customization of:
 ### Sacred Mandala
 A geometric visualization featuring multiple layers of rotating particles. Uses orbital physics to create stable, concentric rings of characters with varying rotational speeds and directions.
 
-![Sacred Mandala](screenshots/sacred-mandala.png)
+![Sacred Mandala](screenshots/SacredMandala.png)
 
 ### DNA Helix
 Simulates a DNA double helix structure where two strands intertwine and characters (representing nucleotides) flow along the structure. Includes character swapping between strands when they approach.
 
-![DNA Helix](screenshots/dna-helix.png)
+![DNA Helix](screenshots/DNA.png)
 
 ### Game of Life
 Implementation of Conway's Game of Life cellular automaton. Cells change state based on neighbor counts, following the classic rules: underpopulation, survival, reproduction, and overpopulation.
 
-![Game of Life](screenshots/game-of-life.png)
+![Game of Life](screenshots/GameOfLife.png)
 
 ## Implementation Notes
 
