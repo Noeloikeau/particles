@@ -10,7 +10,7 @@ A creative application of particle physics in JavaScript/HTML.
 
 ## Overview
 
-This project implements a particle physics system for creating visual effects and simulations in a web browser. The system combines a physics engine, rendering pipeline, and character management to produce various interactive visualizations. It can be quickly run from `index.html` via a live server such as in VScode.
+This project implements a particle physics system for creating visual effects and simulations in a web browser. The system combines a physics engine, rendering pipeline, and character management to produce various interactive visualizations. It can be quickly run from `index.html` via a live server such as in VScode, and is highly customizable via forcing functions.
 
 ## Components
 
