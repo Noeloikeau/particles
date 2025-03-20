@@ -10,7 +10,7 @@ A creative application of particle physics in JavaScript/HTML.
 
 ## Overview
 
-This project implements a particle physics system for creating visual effects and simulations in a web browser. The system combines a physics engine, rendering pipeline, and character management to produce various interactive visualizations.
+This project implements a particle physics system for creating visual effects and simulations in a web browser. The system combines a physics engine, rendering pipeline, and character management to produce various interactive visualizations. It can be quickly run from `index.html` via a live server such as in VScode.
 
 ## Components
 
@@ -106,12 +106,7 @@ The extensive configuration system allows customization of:
 - Scene-specific parameters
 - Boundary behaviors
 
-## Visualizations
-
-### Matrix Rain
-Classical falling character effect with a cyberpunk aesthetic. Characters fall from the top of the screen with varying speeds and random character updates.
-
-![Matrix Rain](screenshots/matrix-rain.png)
+## Example Visualizations
 
 ### Sacred Mandala
 A geometric visualization featuring multiple layers of rotating particles. Uses orbital physics to create stable, concentric rings of characters with varying rotational speeds and directions.
@@ -127,11 +122,6 @@ Simulates a DNA double helix structure where two strands intertwine and characte
 Implementation of Conway's Game of Life cellular automaton. Cells change state based on neighbor counts, following the classic rules: underpopulation, survival, reproduction, and overpopulation.
 
 ![Game of Life](screenshots/game-of-life.png)
-
-### Ecosystem
-A predator-prey simulation with emergent behaviors. Prey (represented as 'A' characters) reproduce and flee from predators, while predators (represented as 'T' characters) hunt prey and consume them for energy.
-
-![Ecosystem](screenshots/ecosystem.png)
 
 ## Implementation Notes
 
