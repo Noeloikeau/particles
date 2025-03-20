@@ -5,7 +5,7 @@ A creative application of particle physics in JavaScript/HTML.
 <!-- Main visualization image -->
 ![Particle System Visualization](screenshots/MatrixRain.jpg)
 
-*Example: Matrix Rain using uniform rectilinear motion with periodic boundary conditions.*
+*The Matrix Rain animation is an example of uniform motion with periodic boundary conditions.*
 
 
 ## Overview
